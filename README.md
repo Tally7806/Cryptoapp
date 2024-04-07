@@ -14,4 +14,4 @@ The app will show a menu with the options "Modules" and "Binary File."
 Decryption: Pick this choice to decrypt a file or message that was encrypted before. You will need to input the encrypted file and the password or key used for encryption.    
 Exit: Select this option to go back to the main menu of the application. Follow the instructions and fill in the required information according to the actions you've selected."    The coded documents will be kept safe and can be easily accessed if saved in encrypted and decrypted form.
 
- Still working to have a complete APP.
+ Still working to have a completed functional APP.
