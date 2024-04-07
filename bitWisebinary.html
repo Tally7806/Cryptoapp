@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Bit-wise Stream Cipher</title>
+	</head>
+	<style>
+		body {
+	  		font-family: 'Helvetica', 'Arial', 'sans-serif'; 
+			color: white;
+			font-size: 11pt;		
+		}
+
+		a, a:link, a:visited, a:active {
+			color: blue;
+			text-decoration: underline;
+		}
+
+		a:hover {
+			cursor:pointer;
+			color: red;
+		}
+
+		.black10pointcourier {
+	  		font-family: 'courier'; 
+			color: black;
+			font-size: 10pt;		
+		}
+		.main-container {
+ 		 font-size: 20px;
+	  background: url(crypto2.avif);
+  	background-size: cover;
+  	background-repeat: no-repeat;
+  	height: 100vh;
+ 	  text-align: center;
+  	flex-direction: column;
+  	justify-content: center;
+   	background-position: center center;
+  }
+		.dropzone {
+			border: 10px dashed gray;
+			width: 20%;
+			padding: 2% 2% 5% 2%;
+			text-align: center;
+			margin: 5px 0 5px 0;
+		}
+
+		.divTablefullwidth{
+			display: table;
+			width: 100%;
+		}
+
+		.divTable{
+			display: table;
+		}
+
+		.divTableRow {
+			display: table-row;
+		}
+		.divTableCell {
+			display: table-cell;
+			padding: 3px 3px;
+		}
+		.divTableBody {
+			display: table-row-group;
+		}
+
+		.greenspan {
+			color: green;	  
+		}
+
+		.redspan {
+			color: red;	  
+		}
+		button{
+  background: purple;
+  color: white;
+  padding: 10px 20px;
+  text-decoration: none;
+  display: inline-block;
+}
+#divEncryptfile{
+		margin-left: 100px;
+}
+#divDecryptfile{
+		margin-left: 100px;
+}
+#encodeResult, #decodeResult{
+    color: white;
+}
+
+
+	</style>	
+	<body>
+   <div class="main-container">
+							<h2>Bitwise Stream Binary</h2>
+							<h1>
+							<button id="btnRefresh" onClick="javascript:location.reload();">Refresh Page</button>
+							<button id="btnDivEncrypt" onClick="javascript:switchdiv('encrypt');">Encrypt a File</button>
+							<button id="btnDivDecrypt" onClick="javascript:switchdiv('decrypt');">Decrypt a File</button>
+							</h1>
+
+		<div class="container" id=divEncryptfile>
+			<h2>Encrypt a File</h2>
+			<div class="divTable">
+				<div class="divTableBody">
+					<div class="divTableRow">
+						<div class="divTableCell">Password</div>
+						<div class="divTableCell"><input id=txtEncpassphrase type=password size=30 onkeyup=javascript:encvalidate(); value=''></div>
+		
+					</div>
+					<div class="divTableRow">
+						<div class="divTableCell">Password (retype)</div>
+						<div class="divTableCell"><input id=txtEncpassphraseretype type=password size=30 onkeyup=javascript:encvalidate(); value=''></div>
+						<div class="divTableCell"><span class=greenspan id=spnCheckretype></span></div>
+					</div>
+				</div>
+			</div>
+
+			<div>
+				<div class=dropzone id="encdropzone" ondrop="drop_handler(event);" ondragover="dragover_handler(event);" ondragend="dragend_handler(event);">
+					<p>Drag and drop the file to be encrypted into this dropzone, or click <a onclick=javascript:encfileElem.click();>here</a> to select file.</p>
+					<p><span id=spnencfilename></span></p>
+				</div>
+				<input type="file" id="encfileElem" style="display:none" onchange="selectfile(this.files)">
+			</div>
+
+			<div class="divTable">
+				<div class="divTableBody">
+					<div class="divTableRow">
+						<div class="divTableCell"><button id=btnEncrypt onclick=javascript:encryptfile(); disabled>Encrypt File</button></div>
+						<div class="divTableCell"><span id=spnEncstatus></span></div>
+					</div>
+				</div>
+			</div>
+			<div>
+				<a id=aEncsavefile hidden><button>Save Encrypted File</button></a>
+			</div>
+
+		</div>
+
+		<div class="container" id=divDecryptfile>
+			<h2>Decrypt a File</h2>
+			<div class="divTable">
+				<div class="divTableBody">
+					<div class="divTableRow">
+						<div class="divTableCell">Password</div>
+						<div class="divTableCell"><input id=txtDecpassphrase type=password size=30 onkeyup=javascript:decvalidate(); value=''></div>
+					</div>
+				</div>
+			</div>
+
+			<div>
+					<div class=dropzone  id="decdropzone" ondrop="drop_handler(event);" ondragover="dragover_handler(event);" ondragend="dragend_handler(event);">
+						<p>Drag and drop file to be decrypted into this dropzone, or click <a role=button onclick=javascript:decfileElem.click();>here</a> to select file.</p>
+						<p><span id=spndecfilename></span></p>
+					</div>
+					<input type="file" id="decfileElem" style="display:none" onchange="selectfile(this.files)">
+			</div>
+
+			<div class="divTable">
+				<div class="divTableBody">
+					<div class="divTableRow">
+						<div class="divTableCell"><button id=btnDecrypt onclick=javascript:decryptfile(); disabled>Decrypt File</button></div>
+						<div class="divTableCell"><span id=spnDecstatus></span></div>
+					</div>
+				</div>
+			</div>
+
+			<div>
+				<a id=aDecsavefile hidden><button>Save Decrypted File</button></a>
+			</div>
+				<div id="encodeResult"></div>
+				<div id="decodeResult"></div>
+				</div>
+		 <a href="index.html">Back to Main Menu</a>
+			</div>
+			
+	</body>
+</html>
+
+
+<script type="text/javascript">
+	var mode=null;
+	var objFile=null;
+	switchdiv('encrypt');
+
+	function switchdiv(t) {
+		if(t=='encrypt') {
+			divEncryptfile.style.display='block';
+			divDecryptfile.style.display='none';
+			btnDivEncrypt.disabled=true;
+			btnDivDecrypt.disabled=false;
+			mode='encrypt';
+		} else if(t=='decrypt') {
+			divEncryptfile.style.display='none';
+			divDecryptfile.style.display='block';
+			btnDivEncrypt.disabled=false;
+			btnDivDecrypt.disabled=true;
+			mode='decrypt';
+		}
+	}
+
+	function encvalidate() {
+		if(txtEncpassphrase.value.length>=8 && txtEncpassphrase.value==txtEncpassphraseretype.value) { 
+		  spnCheckretype.classList.add("greenspan");
+		  spnCheckretype.classList.remove("redspan");
+		  spnCheckretype.innerHTML='&#10004;';
+		} else { 
+		  spnCheckretype.classList.remove("greenspan");
+		  spnCheckretype.classList.add("redspan");
+  		  spnCheckretype.innerHTML='&#10006;';
+		}
+
+		if( txtEncpassphrase.value.length>=8 && txtEncpassphrase.value==txtEncpassphraseretype.value && objFile ) { btnEncrypt.disabled=false; } else { btnEncrypt.disabled=true; }
+	}
+
+	function decvalidate() {
+		if( txtDecpassphrase.value.length>0 && objFile ) { btnDecrypt.disabled=false; } else { btnDecrypt.disabled=true; }
+	}
+
+	//drag and drop functions:
+	//https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/File_drag_and_drop
+	function drop_handler(ev) {
+		console.log("Drop");
+		ev.preventDefault();
+		// If dropped items aren't files, reject them
+		var dt = ev.dataTransfer;
+		if (dt.items) {
+			// Use DataTransferItemList interface to access the file(s)
+			for (var i=0; i < dt.items.length; i++) {
+				if (dt.items[i].kind == "file") {
+					var f = dt.items[i].getAsFile();
+					console.log("... file[" + i + "].name = " + f.name);
+					objFile=f;
+				}
+			}
+		} else {
+			// Use DataTransfer interface to access the file(s)
+			for (var i=0; i < dt.files.length; i++) {
+				console.log("... file[" + i + "].name = " + dt.files[i].name);
+			}  
+			objFile=file[0];
+		}		 
+		displayfile()
+		if(mode=='encrypt') { encvalidate(); } else if(mode=='decrypt') { decvalidate(); }
+	}
+
+	function dragover_handler(ev) {
+		console.log("dragOver");
+		// Prevent default select and drag behavior
+		ev.preventDefault();
+	}
+
+	function dragend_handler(ev) {
+		console.log("dragEnd");
+		// Remove all of the drag data
+		var dt = ev.dataTransfer;
+		if (dt.items) {
+			// Use DataTransferItemList interface to remove the drag data
+			for (var i = 0; i < dt.items.length; i++) {
+				dt.items.remove(i);
+			}
+		} else {
+			// Use DataTransfer interface to remove the drag data
+			ev.dataTransfer.clearData();
+		}
+	}
+
+	function selectfile(Files) {
+		objFile=Files[0];
+		displayfile()
+		if(mode=='encrypt') { encvalidate(); } else if(mode=='decrypt') { decvalidate(); }
+	}
+
+	function displayfile() {
+		var s;
+		var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+		var bytes=objFile.size;
+		var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+		if(i==0) { s=bytes + ' ' + sizes[i]; } else { s=(bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i]; }
+
+		if(mode=='encrypt') { 
+			spnencfilename.textContent=objFile.name + ' (' + s + ')'; 
+		} else if(mode=='decrypt') {  
+			spndecfilename.textContent=objFile.name + ' (' + s + ')'; 
+		} 
+	}
+
+	function readfile(file){
+		return new Promise((resolve, reject) => {
+			var fr = new FileReader();  
+			fr.onload = () => {
+				resolve(fr.result )
+			};
+			fr.readAsArrayBuffer(file);
+		});
+	}
+
+	async function encryptfile() {
+
+		// Start the timer for encrypt
+    const encodeStartTime = performance.now();
+    btnEncrypt.disabled = true;
+
+    try {
+        var plaintextbytes = await readfile(objFile);
+        var key = new TextEncoder().encode(txtEncpassphrase.value); // Convert passphrase to bytes
+
+        // Encrypt plaintext using XOR
+        var ciphertext = new Uint8Array(plaintextbytes.length);
+        for (let i = 0; i < plaintextbytes.length; i++) {
+            ciphertext[i] = plaintextbytes[i] ^ key[i % key.length]; // XOR each byte with corresponding key byte
+        }
+
+        // Create Blob for downloading
+        var blob = new Blob([ciphertext], { type: 'application/octet-stream' });
+        var blobUrl = URL.createObjectURL(blob);
+        aEncsavefile.href = blobUrl;
+        aEncsavefile.download = objFile.name + '.enc';
+
+        spnEncstatus.classList.add("greenspan");
+        spnEncstatus.innerHTML = '<p>File encrypted.</p>';
+        aEncsavefile.hidden = false;
+    } catch (error) {
+        console.error('Error encrypting file:', error);
+        spnEncstatus.classList.add("redspan");
+        spnEncstatus.innerHTML = '<p>Error encrypting file. See console log.</p>';
+    }
+		// End the timer for encoding
+    const encodeEndTime = performance.now();
+
+    // Calculate the elapsed time for encoding
+    const encodeElapsedTime = encodeEndTime - encodeStartTime;
+
+    // Display the elapsed time for encoding
+    document.getElementById('encodeResult').innerHTML = `Encoding - Elapsed time: ${encodeElapsedTime} milliseconds`;
+
+    return result;
+}
+
+async function decryptfile() {
+	// Start the timer for decoding
+	const decodeStartTime = performance.now();
+    btnDecrypt.disabled = true;
+
+    try {
+        var cipherbytes = await readfile(objFile);
+        var key = new TextEncoder().encode(txtDecpassphrase.value); // Convert passphrase to bytes
+
+        // Decrypt ciphertext using XOR
+        var plaintextbytes = new Uint8Array(cipherbytes.length);
+        for (let i = 0; i < cipherbytes.length; i++) {
+            plaintextbytes[i] = cipherbytes[i] ^ key[i % key.length]; // XOR each byte with corresponding key byte
+        }
+
+        // Create Blob for downloading
+        var blob = new Blob([plaintextbytes], { type: 'application/octet-stream' });
+        var blobUrl = URL.createObjectURL(blob);
+        aDecsavefile.href = blobUrl;
+        aDecsavefile.download = objFile.name + '.dec';
+
+        spnDecstatus.classList.add("greenspan");
+        spnDecstatus.innerHTML = '<p>File decrypted.</p>';
+        aDecsavefile.hidden = false;
+    } catch (error) {
+        console.error('Error decrypting file:', error);
+        spnDecstatus.classList.add("redspan");
+        spnDecstatus.innerHTML = '<p>Error decrypting file. See console log.</p>';
+    }
+		
+		// End the timer for decoding
+    const decodeEndTime = performance.now();
+
+    // Calculate the elapsed time for decoding
+    const decodeElapsedTime = decodeEndTime - decodeStartTime;
+
+    // Display the elapsed time for decoding
+    document.getElementById('decodeResult').innerHTML = `Decoding - Elapsed time: ${decodeElapsedTime} milliseconds`;
+
+    return result;
+  
+}
+
+</script>
+

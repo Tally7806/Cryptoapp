@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .container {
+      margin-left: 200px;
+    }
+
+    button {
+      background: purple;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .main-container {
+ 		 font-size: 20px;
+	     background: url(crypto2.avif);
+  	    background-size: cover;
+  	    background-repeat: no-repeat;
+  	    height: 100vh;
+ 	    text-align: center;
+  	    flex-direction: column;
+  	    justify-content: center;
+   	    background-position: center center;
+  }
+  #encodeResult, #decodeResult{
+    color: white;
+  }
+  h2{
+    color:white
+}
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <h2>XOR Cipher</h2>
+    <label for="message">Message:</label>
+    <input type="text" id="message"><br><br>
+    <label for="key">Numeric Key:</label>
+    <input type="text" id="key"><br><br>
+    <button onclick="encryptMessage()">Encrypt</button>
+    <p id="result"></p>
+    <button onclick="decryptMessage()">Decrypt</button>
+    <p id="result2"></p>
+    <div id="encodeResult"></div>
+    <div id="decodeResult"></div>
+    
+    <a href="index.html">Back to Main Menu</a>
+  </div>
+
+  <script>
+    // Function to perform XOR encryption/decryption
+    function xorCipher(message, key) {
+      let result = '';
+      for (let i = 0; i < message.length; i++) {
+        // XOR the character code of the message with the key
+        let charCode = message.charCodeAt(i) ^ key;
+        result += String.fromCharCode(charCode);
+      }
+      return result;
+    }
+
+    // Function to encrypt the message
+    function encryptMessage() {
+          // Start the timer for encoding
+          const encodeStartTime = performance.now();
+      const message = document.getElementById('message').value;
+      const key = Number(document.getElementById('key').value);
+      const encryptedMessage = xorCipher(message, key);
+      document.getElementById('result').innerHTML = 'Encrypted Message: ' + encryptedMessage;
+       // End the timer for encoding
+       const encodeEndTime = performance.now();
+
+// Calculate the elapsed time for encoding
+const encodeElapsedTime = encodeEndTime - encodeStartTime;
+
+// Display the elapsed time for encoding
+document.getElementById('encodeResult').innerHTML = `Encoding - Elapsed time: ${encodeElapsedTime} milliseconds`;
+
+return result;
+    }
+
+    // Function to decrypt the message
+    function decryptMessage() {
+      //Start the timer for decoding
+             const decodeStartTime = performance.now();
+      const message = document.getElementById('message').value;
+      const key = Number(document.getElementById('key').value);
+      const decryptedMessage = xorCipher(message, key);
+      document.getElementById('result2').innerHTML = 'Decrypted Message: ' + decryptedMessage;
+       // End the timer for decoding
+       const decodeEndTime = performance.now();
+
+// Calculate the elapsed time for decoding
+const decodeElapsedTime = decodeEndTime - decodeStartTime;
+
+// Display the elapsed time for decoding
+document.getElementById('decodeResult').innerHTML = `Decoding - Elapsed time: ${decodeElapsedTime} milliseconds`;
+
+return result;
+    }
+
+
+  </script>
+</body>
+</html>

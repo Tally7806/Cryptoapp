@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Keyed Hashing Algorithm and Growth Functions</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="main-container">
+        <h1>Keyed Hashing Algorithm</h1>
+        <form id="hashForm">
+            <label for="message">Message:</label>
+            <input type="text" id="message" name="message"><br><br>
+            <label for="key">Key:</label>
+            <input type="text" id="key" name="key"><br><br>   
+        </form>
+        <button onclick="generateHash()">Generate Hash</button> <br><br>
+        <div style="margin-left: 100px; background: purple; color: white; width: 500px;" id="result"></div>
+        
+        <!-- Radio buttons for selecting growth function -->
+        <form id="growthForm">
+            <input type="radio" id="constant" name="growthFunction" value="constant" checked>
+            <label for="constant">Constant</label><br>
+            <input type="radio" id="linear" name="growthFunction" value="linear">
+            <label for="linear">Linear</label><br>
+            <input type="radio" id="exponential" name="growthFunction" value="exponential">
+            <label for="exponential">Exponential</label><br>
+            <input type="radio" id="logarithmic" name="growthFunction" value="logarithmic">
+            <label for="logarithmic">Logarithmic</label><br>
+            <input type="radio" id="quadratic" name="growthFunction" value="quadratic">
+            <label for="quadratic">Quadratic</label><br>
+        </form><br>
+         <!-- Link to go back to the main menu -->
+         <a href="index.html">Back to Main Menu</a>
+    </div>
+
+    <canvas id="myChart"></canvas>
+
+    <style>
+        .main-container {
+            width: 800px;
+            height: 500px;
+            align-self: center;
+            margin-left: 200px;
+        }
+
+        input {
+            background: purple;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            display: inline-block;
+            font: bold;
+        }
+
+        button {
+            background: purple;
+            color: white;
+            padding: 10px 20px;
+            text-decoration:Ha none;
+            display: inline-block;
+            margin-left: 150px;
+            font-size: 15px;
+        }
+       
+        h1 {
+            margin-left: 50px;
+            padding-top: 30px;
+        }
+
+        label {
+            font: bold;
+            font-size: 20px;
+            margin-left: 90px;
+        }
+        #constant, #linear, #exponential, #logarithmic, #quadratic{
+            margin-left: 120px;
+        }
+    </style>
+
+    <script>
+        // Generate data points for constant growth
+        var constantDataPoints = [];
+        for (var i = 0; i <= 10; i++) {
+            constantDataPoints.push({ x: i, y: 1 });
+        }
+
+        // Generate data points for linear growth
+        var linearDataPoints = [];
+        for (var i = 0; i <= 10; i++) {
+            linearDataPoints.push({ x: i, y: i });
+        }
+
+        // Generate data points for exponential growth
+        var exponentialDataPoints = [];
+        for (var i = 0; i <= 10; i++) {
+            exponentialDataPoints.push({ x: i, y: Math.pow(2, i) });
+        }
+
+        // Generate data points for logarithmic growth
+        var logarithmicDataPoints = [];
+        for (var i = 0; i <= 10; i++) {
+            logarithmicDataPoints.push({ x: i, y: Math.log(i + 1) }); // Adjusted the range for better visibility
+        }
+
+        // Generate data points for quadratic growth
+        var quadraticDataPoints = [];
+        for (var i = 0; i <= 10; i++) {
+            quadraticDataPoints.push({ x: i, y: i ** 2 });
+        }
+
+        // Create the chart
+        var ctx = document.getElementById("myChart").getContext("2d");
+        var chart = new Chart(ctx, {
+            type: "line",
+            data: {
+                datasets: [
+                    {
+                        label: "Constant",
+                        data: constantDataPoints,
+                        borderColor: "yellow",
+                        fill: false
+                    },
+                    {
+                        label: "Linear",
+                        data: linearDataPoints,
+                        borderColor: "red",
+                        fill: false
+                    },
+                    {
+                        label: "Exponential",
+                        data: exponentialDataPoints,
+                        borderColor: "green",
+                        fill: false
+                    },
+                    {
+                        label: "Logarithmic",
+                        data: logarithmicDataPoints,
+                        borderColor: "blue",
+                        fill: false
+                    },
+                    {
+                        label: "Quadratic",
+                        data: quadraticDataPoints,
+                        borderColor: "purple",
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: "linear",
+                        position: "bottom"
+                    },
+                    y: {
+                        type: "linear",
+                        position: "left",
+                        max: 10 // Limit the maximum value of the y-axis to 10
+                    }
+                }
+            }
+        });
+
+        // Function to update the chart with the selected growth function
+        function updateChart(selectedFunction) {
+            var datasets = [];
+
+            // Determine the selected growth function and set the corresponding data points
+            switch(selectedFunction) {
+                case "constant":
+                    datasets.push({ label: "Constant", data: constantDataPoints, borderColor: "yellow", fill: false });
+                    break;
+                case "linear":
+                    datasets.push({ label: "Linear", data: linearDataPoints, borderColor: "red", fill: false });
+                    break;
+                case "exponential":
+                    datasets.push({ label: "Exponential", data: exponentialDataPoints, borderColor: "green", fill: false });
+                    break;
+                case "logarithmic":
+                    datasets.push({ label: "Logarithmic", data: logarithmicDataPoints, borderColor: "blue", fill: false });
+                    break;
+                case "quadratic":
+                    datasets.push({ label: "Quadratic", data: quadraticDataPoints, borderColor: "purple", fill: false });
+                    break;
+                default:
+                    console.error("Invalid growth function selected.");
+                    return;
+            }
+
+            // Update the chart with the selected data points
+            chart.data.datasets = datasets;
+            chart.update();
+        }
+
+        // Event listener for form input changes
+        document.querySelectorAll('input[type="radio"][name="growthFunction"]').forEach(function(radio) {
+            radio.addEventListener("change", function() {
+                // Get the selected growth function value
+                var selectedFunction = document.querySelector('input[type="radio"][name="growthFunction"]:checked').value;
+                updateChart(selectedFunction);
+            });
+        });
+
+        // Function to generate hash
+        async function generateHash() {
+            var message = document.getElementById("message").value; // Message to be hashed
+            var key = document.getElementById("key").
+            value; // Key for hashing
+
+// Convert the key and message to Uint8Arrays
+var keyBytes = new TextEncoder().encode(key);
+var messageBytes = new TextEncoder().encode(message);
+
+// Perform the HMAC-SHA256 hash
+var hashBytes = await hmacSha256(keyBytes, messageBytes);
+
+// Convert the hash bytes to a hex string
+var hashHex = bytesToHex(hashBytes);
+// Display the result
+var resultElement = document.getElementById("result");
+resultElement.innerHTML = "Hash: " + hashHex;
+}
+
+// Function to perform HMAC-SHA256 hashing
+async function hmacSha256(key, message) {
+var blockSize = 64; // HMAC block size (in bytes)
+var hashSize = 32; // SHA-256 digest size (in bytes)
+
+// Prepare the key
+if (key.length > blockSize) {
+    key = await sha256(key);
+} else if (key.length < blockSize) {
+    key = padKey(key);
+}
+
+// Compute inner padding and outer padding
+var innerPadding = new Uint8Array(blockSize);
+var outerPadding = new Uint8Array(blockSize);
+for (var i = 0; i < blockSize; i++) {
+    innerPadding[i] = key[i] ^ 0x36;
+    outerPadding[i] = key[i] ^ 0x5C;
+}
+
+// Compute inner hash
+var innerHash = new Uint8Array(innerPadding.length + message.length);
+innerHash.set(innerPadding);
+innerHash.set(message, innerPadding.length);
+innerHash = await sha256(innerHash);
+
+// Compute outer hash
+var outerHash = new Uint8Array(outerPadding.length + hashSize);
+outerHash.set(outerPadding);
+outerHash.set(innerHash, outerPadding.length);
+outerHash = await sha256(outerHash);
+
+return outerHash;
+}
+
+// Function to pad the key
+function padKey(key) {
+var paddedKey = new Uint8Array(64);
+paddedKey.set(key);
+return paddedKey;
+}
+
+// Function to perform SHA-256 hashing
+async function sha256(message) {
+var hashBuffer = await crypto.subtle.digest("SHA-256", message);
+var hashArray = Array.from(new Uint8Array(hashBuffer));
+return new Uint8Array(hashArray);
+}
+
+// Function to convert bytes to hex string
+function bytesToHex(bytes) {
+var hexBytes = [];
+for (var i = 0; i < bytes.length; i++) {
+    var hex = bytes[i].toString(16);
+    
+    if (hex.length === 1) {
+        hex = "0" + hex;
+    }
+    hexBytes.push(hex);
+}
+return hexBytes.join("");
+}
+</script>
+</body>
+</html>

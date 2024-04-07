@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Web Browser Based File Encryption / Decryption</title>
+	</head>
+	<style>
+		body {
+	  		font-family: 'Helvetica', 'Arial', 'sans-serif'; 
+			color: black;
+			font-size: 11pt;		
+		}
+
+		a, a:link, a:visited, a:active {
+			color: blue;
+			text-decoration: underline;
+		}
+
+		a:hover {
+			cursor:pointer;
+			color: red;
+		}
+
+		.black10pointcourier {
+	  		font-family: 'courier'; 
+			color: black;
+			font-size: 10pt;		
+		}
+
+		.container {
+			width: 80%;
+			margin: 0 auto;
+		}
+
+		.dropzone {
+			border: 10px dashed gray;
+			width: 20%;
+			padding: 2% 2% 5% 2%;
+			text-align: center;
+			margin: 5px 0 5px 0;
+		}
+
+		.divTablefullwidth{
+			display: table;
+			width: 100%;
+		}
+
+		.divTable{
+			display: table;
+		}
+
+		.divTableRow {
+			display: table-row;
+		}
+		.divTableCell {
+			display: table-cell;
+			padding: 3px 3px;
+		}
+		.divTableBody {
+			display: table-row-group;
+		}
+
+		.greenspan {
+			color: green;	  
+		}
+
+		.redspan {
+			color: red;	  
+		}
+		button {
+      background: purple;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      display: inline-block;
+    }
+		.main-container {
+ 		 font-size: 20px;
+	     background: url(crypto2.avif);
+  	    background-size: cover;
+  	    background-repeat: no-repeat;
+  	    height: 100vh;
+ 	    text-align: center;
+  	    flex-direction: column;
+  	    justify-content: center;
+   	    background-position: center center;
+  }
+	h2{
+    color:white
+}
+#encodeResult, #decodeResult{
+    color: white;
+}
+	</style>	
+	<body>
+		<div class="main-container">
+			<h2> DES Binary</h2>
+			<h1>
+			<button id="btnRefresh" onClick="javascript:location.reload();">Refresh Page</button>
+			<button id="btnDivEncrypt" onClick="javascript:switchdiv('encrypt');">Encrypt a File</button>
+			<button id="btnDivDecrypt" onClick="javascript:switchdiv('decrypt');">Decrypt a File</button>
+			</h1>
+
+<div class="container" id=divEncryptfile>
+<h2>Encrypt a File</h2>
+<div class="divTable">
+<div class="divTableBody">
+	<div class="divTableRow">
+		<div class="divTableCell">Password</div>
+		<div class="divTableCell"><input id=txtEncpassphrase type=password size=30 onkeyup=javascript:encvalidate(); value=''></div>
+	</div>
+	<div class="divTableRow">
+		<div class="divTableCell">Password (retype)</div>
+		<div class="divTableCell"><input id=txtEncpassphraseretype type=password size=30 onkeyup=javascript:encvalidate(); value=''></div>
+		<div class="divTableCell"><span class=greenspan id=spnCheckretype></span></div>
+	</div>
+</div>
+</div>
+<div>
+<div class=dropzone id="encdropzone" ondrop="drop_handler(event);" ondragover="dragover_handler(event);" ondragend="dragend_handler(event);">
+	<p>Drag and drop the file to be encrypted into this dropzone, or click <a onclick=javascript:encfileElem.click();>here</a> to select file.</p>
+	<p><span id=spnencfilename></span></p>
+</div>
+<input type="file" id="encfileElem" style="display:none" onchange="selectfile(this.files)">
+</div>
+
+<div class="divTable">
+<div class="divTableBody">
+	<div class="divTableRow">
+		<div class="divTableCell"><button id=btnEncrypt onclick=javascript:encryptfile(); disabled>Encrypt File</button></div>
+		<div class="divTableCell"><span id=spnEncstatus></span></div>
+	</div>
+</div>
+</div>
+<div>
+<a id=aEncsavefile hidden><button>Save Encrypted File</button></a>
+</div>
+</div>
+
+<div class="container" id=divDecryptfile>
+<h2>Decrypt a File</h2>
+
+
+<div class="divTable">
+<div class="divTableBody">
+	<div class="divTableRow">
+		<div class="divTableCell">Password</div>
+		<div class="divTableCell"><input id=txtDecpassphrase type=password size=30 onkeyup=javascript:decvalidate(); value=''></div>
+	</div>
+</div>
+</div>
+
+<div>
+	<div class=dropzone  id="decdropzone" ondrop="drop_handler(event);" ondragover="dragover_handler(event);" ondragend="dragend_handler(event);">
+		<p>Drag and drop file to be decrypted into this dropzone, or click <a role=button onclick=javascript:decfileElem.click();>here</a> to select file.</p>
+		<p><span id=spndecfilename></span></p>
+	</div>
+	<input type="file" id="decfileElem" style="display:none" onchange="selectfile(this.files)">
+</div>
+
+<div class="divTable">
+<div class="divTableBody">
+	<div class="divTableRow">
+		<div class="divTableCell"><button id=btnDecrypt onclick=javascript:decryptfile(); disabled>Decrypt File</button></div>
+		<div class="divTableCell"><span id=spnDecstatus></span></div>
+	</div>
+</div>
+</div>
+
+<div>
+<a id=aDecsavefile hidden><button>Save Decrypted File</button></a>
+</div>
+<br>
+<div id="encodeResult"></div>
+<div id="decodeResult"></div>
+<a href="index.html">Back to Main Menu</a>
+</div>
+</div>
+	</body>
+</html>
+
+
+<script type="text/javascript">
+	var mode = null;
+        var objFile = null;
+
+        window.onload = function () {
+            switchdiv('encrypt');
+        };
+
+        function switchdiv(t) {
+            mode = t;
+            document.getElementById('divEncryptfile').style.display = (t === 'encrypt') ? 'block' : 'none';
+            document.getElementById('divDecryptfile').style.display = (t === 'decrypt') ? 'block' : 'none';
+            document.getElementById('btnDivEncrypt').disabled = (t === 'encrypt');
+            document.getElementById('btnDivDecrypt').disabled = (t === 'decrypt');
+            resetStatus();
+        }
+
+        function encvalidate() {
+            var passphrase = document.getElementById('txtEncpassphrase').value;
+            var retypePassphrase = document.getElementById('txtEncpassphraseretype').value;
+            var checkRetype = document.getElementById('spnCheckretype');
+            var btnEncrypt = document.getElementById('btnEncrypt');
+
+            if (passphrase.length >= 8 && passphrase === retypePassphrase) { 
+                checkRetype.classList.add("greenspan");
+                checkRetype.classList.remove("redspan");
+                checkRetype.innerHTML = '&#10004;';
+                btnEncrypt.disabled = false;
+            } else { 
+                checkRetype.classList.remove("greenspan");
+                checkRetype.classList.add("redspan");
+                checkRetype.innerHTML = '&#10006;';
+                btnEncrypt.disabled = true;
+            }
+        }
+
+        function selectfile(files) {
+            objFile = files[0];
+            displayfile();
+            if (mode === 'encrypt') { 
+                encvalidate(); 
+            } else if (mode === 'decrypt') { 
+                decvalidate(); 
+            }
+        }
+
+        function displayfile() {
+            var s;
+            var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            var bytes = objFile.size;
+            var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+            if (i === 0) { 
+                s = bytes + ' ' + sizes[i]; 
+            } else { 
+                s = (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i]; 
+            }
+
+            if (mode === 'encrypt') { 
+                document.getElementById('spnencfilename').textContent = objFile.name + ' (' + s + ')'; 
+            } else if (mode === 'decrypt') {  
+                document.getElementById('spndecfilename').textContent = objFile.name + ' (' + s + ')'; 
+            } 
+        }
+
+        async function readfile(file) {
+            return new Promise((resolve, reject) => {
+                var fr = new FileReader();  
+                fr.onload = () => resolve(fr.result)
+                fr.readAsArrayBuffer(file);
+            });
+        }
+				function encryptSalsa20(key, nonce, plaintext) {
+    
+}
+
+        async function encryptfile() {
+            if (!objFile) {
+                console.error('No file selected for encryption.');
+                return;
+            }
+
+            try {
+                // Read the file content
+                var plaintextbytes = await readfile(objFile);
+                var plaintextUint8Array = new Uint8Array(plaintextbytes);
+
+                // Generate a random key and nonce for Salsa20 encryption
+                var key = window.crypto.getRandomValues(new Uint8Array(32));
+                var nonce = window.crypto.getRandomValues(new Uint8Array(8));
+
+                // Encrypt the plaintext using Salsa20
+                var ciphertextUint8Array = encryptSalsa20(key, nonce, plaintextUint8Array);
+
+                // Create Blob from the encrypted data
+                var blob = new Blob([nonce, new Uint8Array(ciphertextUint8Array)], { type: 'application/octet-stream' });
+                var blobUrl = URL.createObjectURL(blob);
+
+                // Set download link attributes
+                var aEncsavefile = document.getElementById('aEncsavefile');
+                if (aEncsavefile) {
+                    aEncsavefile.href = blobUrl;
+                    aEncsavefile.download = 'en' + objFile.name;
+                    aEncsavefile.hidden = false; // Make the save file button visible
+                } else {
+                    console.error('Error: Could not find the save file button.');
+                }
+
+                // Display success message
+                var spnEncstatus = document.getElementById('spnEncstatus');
+                if (spnEncstatus) {
+                    spnEncstatus.classList.add("greenspan");
+                    spnEncstatus.textContent = 'File encrypted with Salsa20 stream cipher.';
+                } else {
+                    console.error('Error: Could not find the status element for encryption.');
+                }
+            } catch (error) {
+                console.error('Error encrypting file with Salsa20:', error);
+                var spnEncstatus = document.getElementById('spnEncstatus');
+                if (spnEncstatus) {
+                    spnEncstatus.classList.add("redspan");
+                    spnEncstatus.textContent = 'Error encrypting file with Salsa20. See console log.';
+                } else {
+                    console.error('Error: Could not find the status element for encryption.');
+                }
+            }
+        }
+
+
+// Make sure to define the encryptSalsa20 function before using it
+function decvalidate() {
+    // Validation logic for decryption
+    var passphrase = document.getElementById('txtDecpassphrase').value;
+    // Perform validation logic based on your requirements
+    // For example, check if the passphrase meets certain criteria
+    if (passphrase.length >= 8) {
+        // Passphrase meets criteria, enable decryption button or perform other actions
+        document.getElementById('btnDecrypt').disabled = false;
+    } else {
+        // Passphrase does not meet criteria, disable decryption button or perform other actions
+        document.getElementById('btnDecrypt').disabled = true;
+    }
+}
+
+async function decryptFile(file, options, key) {
+            // Implementation of decryptFile function
+        }
+
+        async function decryptfile() {
+            // Start the timer for decoding
+            const decodeStartTime = performance.now();
+            document.getElementById('btnDecrypt').disabled = true;
+
+            try {
+                // Retrieve the key (same key used for encryption)
+                const encoder = new TextEncoder();
+								const key = encoder.encode(txtDecpassphrase.value);
+
+                const decryptedBytes = await decryptFile(objFile, null, key);
+
+                // Create Blob from the decrypted data
+                const blob = new Blob([new Uint8Array(decryptedBytes)], { type: 'application/octet-stream' });
+                const blobUrl = URL.createObjectURL(blob);
+
+                // Set download link attributes
+                var aDecsavefile = document.getElementById('aDecsavefile');
+                if (aDecsavefile) {
+                    aDecsavefile.href = blobUrl;
+                    aDecsavefile.download = 'dec' + objFile.name;
+                    aDecsavefile.hidden = false; // Make the save file button visible
+                } else {
+                    console.error('Error: Could not find the save file button.');
+                }
+
+                // Display success message
+                var spnDecstatus = document.getElementById('spnDecstatus');
+                if (spnDecstatus) {
+                    spnDecstatus.classList.add("greenspan");
+                    spnDecstatus.textContent = 'File decrypted with DES stream cipher.';
+                } else {
+                    console.error('Error: Could not find the status element for decryption.');
+                }
+            } catch (error) {
+                console.error('Error decrypting file with DES:', error);
+                var spnDecstatus = document.getElementById('spnDecstatus');
+                if (spnDecstatus) {
+                    spnDecstatus.classList.add("redspan");
+                    spnDecstatus.textContent = 'Error decrypting file with DES. See console log.';
+                } else {
+                    console.error('Error: Could not find the status element for decryption.');
+                }
+            }
+						
+
+            // End the timer for decoding
+            const decodeEndTime = performance.now();
+
+            // Calculate the elapsed time for decoding
+            const decodeElapsedTime = decodeEndTime - decodeStartTime;
+
+            // Display the elapsed time for decoding
+            var decodeResultElement = document.getElementById('decodeResult');
+            if (decodeResultElement) {
+                decodeResultElement.textContent = `Decoding - Elapsed time: ${decodeElapsedTime} milliseconds`;
+            } else {
+                console.error('Error: Could not find the element to display decoding result.');
+            }
+        }
+
+</script>

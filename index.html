@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<head>
+  <title>Cryptography App</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="./index.css">
+
+</head>
+<body>
+  <div class="menu-container">
+    <button class="menu-button" onclick="toggleMenu('labs')">Modules</button>
+    <button class="menu-button" onclick="toggleMenu('binaryFile')">Binary File</button>
+  <br>
+<div class="menu-section">
+  <ul class="menu-list" id="labs">
+    <li><a href="CIPHER.html">Classic cipher</a></li>
+    <li><a href="lab14.html">One-way pad</a></li>
+    <li><a href="xorcipher.html">Bit-wise XOR cipher</a></li>
+    <li><a href="DEScryptoJS.html">DES block cipher</a></li>
+    <li><a href="#bitwiseStream">Bit-wise stream cipher</a></li>
+    <li><a href="bitWisebinary.html">Bitwise Binary</a></li>
+    <li><a href="hash.html">Hash</a></li>
+    <li><a href="keyedHash01.html">Keyed Hash</a></li>
+    <li><a href="gcm.html">Authenticated Encrypt (GCM)</a></li>
+    <li><a href="testRSAwebcrypto.html">RSA</a></li>
+    <li><a href="DESBinary.html">DES</a></li>
+    <li><a href="AESGCMbinary.html">AESGCM Binary</a></li>
+  </ul>
+<br>
+  <ul class="menu-list" id="binaryFile">
+    <li><a href="xorbinary.html">Binary</a></li>
+   
+
+  </ul>
+</div>
+</div>
+
+  <script>
+       function toggleMenu(menuId) {
+      var menuList = document.getElementById(menuId);
+      var otherMenus = document.getElementsByClassName("menu-list");
+      for (var i = 0; i < otherMenus.length; i++) {
+        if (otherMenus[i].id !== menuId) {
+          otherMenus[i].style.display = "none";
+        }
+      }
+      if (menuList.style.display === "none") {
+        menuList.style.display = "block";
+      } else {
+        menuList.style.display = "none";
+      }
+    }
+  </script>
+</body>
+</html>

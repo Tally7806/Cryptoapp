@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Stream Cipher and Hash Function</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      width: 100%;
+      padding: 20px;
+      border:solid 1px #ddd;
+      
+    }
+    .container{
+      margin-left: 200px;
+    }
+    h1 {
+      font-size: 24px;
+    }
+    p {
+      font-size: 16px;
+
+    }
+    button{
+      background: purple;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      display: inline-block;
+}
+#keyInput{
+     background: purple;
+     color: white;
+     padding: 10px 20px;
+     text-decoration: none;
+     display: inline-block;
+}
+#plaintextInput{
+     background: purple;
+     color: white;
+     padding: 10px 20px;
+     text-decoration: none;
+     display: inline-block;
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Stream Cipher and Hash Function</h1>
+  <form id="inputForm">
+    <label for="keyInput">Key:</label>
+    <input type="text" id="keyInput" required><br><br>
+    <label for="plaintextInput">Plaintext:</label>
+    <input type="text" id="plaintextInput" required><br><br>
+    <button type="submit">Encrypt and Hash</button>
+  </form>
+  
+  <h2>Output:</h2>
+  <p id="ciphertextOutput"></p>
+  <p id="hashOutput"></p><br>
+    <!-- Link to go back to the main menu -->
+    <a href="index.html">Back to Main Menu</a>
+</div>
+
+  <script>
+    function streamCipher(key, plaintext) {
+      let ciphertext = "";
+      for (let i = 0; i < plaintext.length; i++) {
+        const keyChar = key.charCodeAt(i % key.length);
+        const plainChar = plaintext.charCodeAt(i);
+        const cipherChar = String.fromCharCode(keyChar ^ plainChar);
+        ciphertext += cipherChar;
+      }
+      return ciphertext;
+    }
+
+    function hashFunction(data) {
+      let hash = 0;
+      for (let i = 0; i < data.length; i++) {
+        hash = (hash + data.charCodeAt(i)) % 0xffffffff;
+      }
+      return hash.toString(16);
+    }
+
+    const form = document.getElementById("inputForm");
+    const ciphertextOutput = document.getElementById("ciphertextOutput");
+    const hashOutput = document.getElementById("hashOutput");
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      const key = document.getElementById("keyInput").value;
+      const plaintext = document.getElementById("plaintextInput").value;
+
+      const ciphertext = streamCipher(key, plaintext);
+      const hashValue = hashFunction(plaintext);
+
+      ciphertextOutput.textContent = "Stream cipher ciphertext: " + ciphertext;
+      hashOutput.textContent = "Hash value: " + hashValue;
+    });
+  </script>
+</body>
+</html>

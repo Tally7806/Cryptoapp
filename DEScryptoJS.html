@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DES Encryption and Decryption</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+    <style>
+        .main-container{     
+      font-size: 20px;
+	  background: url(crypto2.avif);
+  	  background-size: cover;
+  	  background-repeat: no-repeat;
+  	  height: 100vh;
+ 	  text-align: center;
+  	  flex-direction: column;
+  	  justify-content: center;
+   	  background-position: center center;
+  }
+
+h2,h3,label{
+    color:white
+}
+#encodeResult, #decodeResult{
+    color: white;
+}
+#encrypted, #decrypted{
+    color: white;
+}
+        button{
+            background: purple;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            display: inline-block;
+}
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <h2>DES Encryption and Decryption</h2>
+
+    <form>
+        <label for="message">Enter Message:</label><br>
+        <input type="text" id="message" name="message"><br><br>
+    
+        <label for="key">Enter Secret Key:</label><br>
+        <input type="text" id="key" name="key"><br><br>
+
+        <button type="button" onclick="encrypt()">Encrypt</button>
+        <button type="button" onclick="decrypt()">Decrypt</button>
+    </form>
+
+        <h3>Encrypted:</h3>
+        <p id="encrypted"></p>
+
+        <h3>Decrypted:</h3>
+        <p id="decrypted"></p>
+        <br>
+        <div id="encodeResult"></div>
+        <div id="decodeResult"></div>
+        <a href="index.html">Back to Main Menu</a>
+    </div>
+
+    <script>
+        function encrypt() {
+            // Start the timer for encrypt
+            const encodeStartTime = performance.now();
+
+            var message = document.getElementById('message').value;
+            var secretKey = document.getElementById('key').value;
+
+            var encrypted = CryptoJS.DES.encrypt(message, secretKey).toString();
+            document.getElementById('encrypted').innerText = encrypted;
+
+            // Clear the decrypted field
+            document.getElementById('decrypted').innerText = '';
+            // End the timer for encoding
+             const encodeEndTime = performance.now();
+
+        // Calculate the elapsed time for encoding
+        const encodeElapsedTime = encodeEndTime - encodeStartTime;
+
+        // Display the elapsed time for encoding
+        document.getElementById('encodeResult').innerHTML = `Encoding - Elapsed time: ${encodeElapsedTime} milliseconds`;
+
+return result;
+        }
+
+        function decrypt() { 	// Start the timer for decoding
+	        const decodeStartTime = performance.now();
+
+            var encryptedMessage = document.getElementById('encrypted').innerText;
+            var secretKey = document.getElementById('key').value;
+
+            var decryptedBytes = CryptoJS.DES.decrypt(encryptedMessage, secretKey);
+            var decrypted = decryptedBytes.toString(CryptoJS.enc.Utf8);
+            document.getElementById('decrypted').innerText = decrypted;
+
+            	// End the timer for decoding
+            const decodeEndTime = performance.now();
+
+        // Calculate the elapsed time for decoding
+        const decodeElapsedTime = decodeEndTime - decodeStartTime;
+
+        // Display the elapsed time for decoding
+        document.getElementById('decodeResult').innerHTML = `Decoding - Elapsed time: ${decodeElapsedTime} milliseconds`;
+
+return result;
+        }
+    </script>
+</body>
+</html>

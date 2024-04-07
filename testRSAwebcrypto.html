@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RSA Encryption/Decryption Test</title>
+    <script>
+        let publicKey, privateKey;
+
+        // Function to generate an RSA key pair
+        function generateKeyPair() {
+
+            window.crypto.subtle.generateKey(
+                {
+                    name: "RSA-OAEP",
+                    modulusLength: 2048, // Can be 1024, 2048, or 4096
+                    publicExponent: new Uint8Array([1, 0, 1]),
+                    hash: {name: "SHA-256"}
+                },
+                true,
+                ["encrypt", "decrypt"]
+            )
+            .then(function(keyPair){
+                publicKey = keyPair.publicKey;
+                privateKey = keyPair.privateKey;
+                document.getElementById('status').innerText = 'Key Pair Generated';
+            })
+            .catch(function(err){
+                console.error(err);
+                document.getElementById('status').innerText = 'Error Generating Key Pair';
+            });
+        }
+
+        // Function to encrypt the message
+        function encryptMessage() {
+                        // Start the timer for encoding
+             const encodeStartTime = performance.now();
+            let message = document.getElementById('message').value;
+            let enc = new TextEncoder();
+            window.crypto.subtle.encrypt(
+                {
+                    name: "RSA-OAEP"
+                },
+                publicKey,
+                enc.encode(message)
+            )
+            .then(function(encrypted){
+                document.getElementById('encrypted').value = btoa(String.fromCharCode.apply(null, new Uint8Array(encrypted)));
+            })
+            .catch(function(err){
+                console.error(err);
+                document.getElementById('status').innerText = 'Error Encrypting Message';
+            });
+             // End the timer for encoding
+            const encodeEndTime = performance.now();
+
+            // Calculate the elapsed time for encoding
+            const encodeElapsedTime = encodeEndTime - encodeStartTime;
+
+        // Display the elapsed time for encoding
+            document.getElementById('encodeResult').innerHTML = `Encoding - Elapsed time: ${encodeElapsedTime} milliseconds`;
+
+return result;
+        }
+
+        // Function to decrypt the message
+        function decryptMessage() {
+            // Start the timer for decoding
+             const decodeStartTime = performance.now();
+            let encrypted = document.getElementById('encrypted').value;
+            let encryptedData = new Uint8Array(atob(encrypted).split('').map(char => char.charCodeAt(0)));
+            window.crypto.subtle.decrypt(
+                {
+                    name: "RSA-OAEP"
+                },
+                privateKey,
+                encryptedData
+            )
+            .then(function(decrypted){
+                let dec = new TextDecoder();
+                document.getElementById('decrypted').value = dec.decode(decrypted);
+            })
+            .catch(function(err){
+                console.error(err);
+                document.getElementById('status').innerText = 'Error Decrypting Message';
+            });
+             // End the timer for decoding
+            const decodeEndTime = performance.now();
+
+        // Calculate the elapsed time for decoding
+        const decodeElapsedTime = decodeEndTime - decodeStartTime;
+
+        // Display the elapsed time for decoding
+        document.getElementById('decodeResult').innerHTML = `Decoding - Elapsed time: ${decodeElapsedTime} milliseconds`;
+
+return result;
+        }
+    </script>
+</head>
+<body>
+    <style>
+        .main-container {
+ 		 font-size: 20px;
+	     background: url(crypto2.avif);
+  	    background-size: cover;
+  	    background-repeat: no-repeat;
+  	    height: 100vh;
+ 	    text-align: center;
+  	    flex-direction: column;
+  	    justify-content: center;
+   	    background-position: center center;
+  }
+  button{
+    background: purple;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    display: inline-block;
+  }
+  h2{
+    color:white
+}
+#encodeResult, #decodeResult{
+    color: white;
+}
+#encrypted, #decrypted{
+    color: black;
+}
+    </style>
+    <div class="main-container">
+    <h2>RSA Encryption/Decryption Test</h2>
+    <button onclick="generateKeyPair()">Generate Key Pair</button>
+    <p id="status"></p>
+
+    <textarea id="message" placeholder="Enter message to encrypt"></textarea><br>
+    <button onclick="encryptMessage()">Encrypt Message</button><br>
+    <textarea id="encrypted" placeholder="Encrypted message will appear here" readonly></textarea><br>
+    <button onclick="decryptMessage()">Decrypt Message</button><br>
+    <textarea id="decrypted" placeholder="Decrypted message will appear here" readonly></textarea><br>
+    <div id="encodeResult"></div>
+    <div id="decodeResult"></div>
+    <a href="index.html">Back to Main Menu</a>
+    </div>
+</body>
+</html>

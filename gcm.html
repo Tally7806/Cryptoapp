@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>AES Encrpyt/Decrypt</title>
+        <link rel="stylesheet" href="css/main.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
+        <script src="js/gcm.js"></script>
+    </head>
+    <body>
+        
+        <style>
+            .main-container {
+ 		    font-size: 20px;
+	        background: url(crypto2.avif);
+  	        background-size: cover;
+  	        background-repeat: no-repeat;
+  	        height: 100vh;
+ 	        text-align: center;
+  	        flex-direction: column;
+  	        justify-content: center;
+   	        background-position: center center;
+  }
+  button{
+    background: purple;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    display: inline-block;
+  }
+  h2,h3,label{
+    color:white
+}
+#encodeResult, #decodeResult{
+    color: white;
+}
+#encrypted, #decrypted{
+    color: white;
+}
+#hmac, #validated{
+    color:white;
+}
+        </style>
+        <div class="main-container">
+            <h2>GCM Encrpt</h2>
+        <p><input type="text" id="password" placeholder="password"></p>
+        <input id="clear_text" type="text" placeholder="clear text">
+        <button onclick="GCM.encryptFromText()">encrypt</button>
+        <label for="useIVCheckBox">Use IV (Init Vector)</label>
+        <input id="useIVCheckBox" type="checkbox" checked>
+        <div id="cipher_output" class="selectable"></div>
+        <input id="cipher_text" type="text" placeholder="cipher text">
+        <button onclick="GCM.decryptFromText()">decrypt</button>
+        <div id="cleartext_output"></div>
+        <br><br>
+        <div>
+          <button onclick="GCM.generateHmac()">Hmac</button>
+          <span id="hmac"></span>
+        </div><br>
+        <div>
+            <button onclick="GCM.validate()">Validate MAC</button>
+            <span id="validated"></span>
+        </div>
+        <div id="encodeResult"></div>
+        <div id="decodeResult"></div>
+     <a href="index.html">Back to Main Menu</a>
+        </div>
+    </body>
+</html>
+

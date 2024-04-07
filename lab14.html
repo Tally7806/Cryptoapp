@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Random Number Generator and One-Time Pad Encryption</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body> 
+    <div class="main-container">
+    
+    <h1>Random Number Generator</h1>
+    <button onclick="generateRandomNumber()">Generate Random Number</button>
+    <p>Random Number: <span id="randomNumber"></span></p>
+    <canvas id="randomNumberChart"></canvas>
+
+    <h1>One-Time Pad Encryption and Decryption</h1>
+    
+    <label for="plaintext">Enter Plain Text:</label>
+    <input type="text" id="plaintext">
+    <button onclick="generateKey()">Generate Key</button><button onclick="encrypt()">Encrypt</button>
+    <p>Encrypted Text: <span id="encryptedText"></span></p>
+    <label for="key">Key (Same Length as Plain Text):</label>
+    <input type="text" id="key">
+    <button onclick="decrypt()">Decrypt</button>
+    <p>Decrypted Text: <span id="decryptedText"></span></p>
+    
+    <div id='encodeResult'></div>
+	<div id='decodeResult'></div><br>
+       <!-- Link to go back to the main menu -->
+       <a href="index.html">Back to Main Menu</a>
+    </div>
+    <style>
+       
+        .main-container {
+            width: 800px;
+            height: 500px;
+            align-self: center;
+            margin-left: 200px;
+        }
+
+        input {
+            background: purple;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            display: inline-block;
+            font: bold;
+        }
+
+        
+        button {
+            background: purple;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 150px;
+            font-size: 15px;
+        }
+
+        h1 {
+            margin-left: 50px;
+            padding-top: 30px;
+        }
+
+        label {
+            font: bold;
+            font-size: 20px;
+            margin-left: 120px;
+        }
+        #constant, #linear, #exponential, #logarithmic, #quadratic {
+            margin-left: 120px;
+        }
+        p{
+            margin-left: 120px;
+        }
+
+    </style>
+
+    <script>
+        let chart; // Variable to hold the Chart.js instance
+        let randomValues = []; // Array to store generated random numbers
+
+        // Function to generate a random number
+         // Function to generate a random number between min (inclusive) and max (exclusive)
+         function getRandomNumber(min, max) {
+            return Math.floor(Math.random() * (max - min)) + min;
+        }
+
+        // Generate a random number between 1 and 1000
+        const randomNumber = getRandomNumber(1, 1001);
+
+        // Display the random number
+        document.getElementById("randomNumber").textContent = randomNumber;
+            // Update the chart with the new data
+            updateChart(randomValues);
+        
+
+        // Function to update the chart with the given data
+        function updateChart(data) {
+            const ctx = document.getElementById("randomNumberChart").getContext("2d");
+
+            // If there's an existing chart instance, destroy it
+            if (chart) {
+                chart.destroy();
+            }
+
+            // Create a new bar chart with the provided data
+            chart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: data.map((_, index) => `No. ${index + 1}`),
+                    datasets: [{
+                        label: "Random Numbers",
+                        data: data,
+                        backgroundColor: "rgba(75, 192, 192, 0.2)",
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to generate a key for encryption
+        function generateKey() {
+             
+            const plaintext = document.getElementById("plaintext").value;
+            const key = [];
+
+            // Generate a random character for each character in the plaintext
+            for (let i = 0; i < plaintext.length; i++) {
+                const randomChar = String.fromCharCode(Math.floor(Math.random() * 128));
+                key.push(randomChar);
+            }
+
+            // Display the generated key in the input field
+            document.getElementById("key").value = key.join('');
+        }
+
+        // Function to encrypt the plain text using the key
+        function encrypt() {
+            // Start the timer for encoding
+            const encodeStartTime = performance.now();
+            const plaintext = document.getElementById("plaintext").value;
+            const key = document.getElementById("key").value;
+
+            // Check if the length of the key matches the length of the plaintext
+            if (plaintext.length !== key.length) {
+                alert("Key length must match the length of the plaintext.");
+                return;
+            }
+
+            let encryptedText = "";
+
+            // Encrypt each character of the plaintext using XOR operation with the corresponding key character
+            for (let i = 0; i < plaintext.length; i++) {
+                const plaintextChar = plaintext.charCodeAt(i);
+                const keyChar = key.charCodeAt(i);
+                const encryptedChar = String.fromCharCode(plaintextChar ^ keyChar);
+                encryptedText += encryptedChar;
+            }
+
+            // Display the encrypted text
+            document.getElementById("encryptedText").textContent = encryptedText;
+            // End the timer for encoding
+            const encodeEndTime = performance.now();
+
+            // Calculate the elapsed time for encoding
+            const encodeElapsedTime = encodeEndTime - encodeStartTime;
+
+            // Display the elapsed time for encoding
+            document.getElementById('encodeResult').innerHTML = `Encoding - Elapsed time: ${encodeElapsedTime} milliseconds`;
+
+return result;
+        }
+
+        // Function to decrypt the encrypted text using the key
+        function decrypt() {
+            // Start the timer for decoding
+    const decodeStartTime = performance.now();
+            const ciphertext = document.getElementById("encryptedText").textContent;
+            const key = document.getElementById("key").value;
+
+            // Check if the length of the key matches the length of the ciphertext
+            if (ciphertext.length !== key.length) {
+                alert("Key length must match the length of the ciphertext.");
+                return;
+            }
+
+            let decryptedText = "";
+
+            // Decrypt each character of the ciphertext using XOR operation with the corresponding key character
+            for (let i = 0; i < ciphertext.length; i++) {
+                const ciphertextChar = ciphertext.charCodeAt(i);
+                const keyChar = key.charCodeAt(i);
+                const decryptedChar = String.fromCharCode(ciphertextChar ^ keyChar);
+                decryptedText += decryptedChar;
+            }
+
+            // Display the decrypted text
+            document.getElementById("decryptedText").textContent = decryptedText;
+             // End the timer for decoding
+             const decodeEndTime = performance.now();
+
+            // Calculate the elapsed time for decoding
+            const decodeElapsedTime = decodeEndTime - decodeStartTime;
+
+            // Display the elapsed time for decoding
+            document.getElementById('decodeResult').innerHTML = `Decoding - Elapsed time: ${decodeElapsedTime} milliseconds`;
+        }
+    </script>
+</body>
+</html>

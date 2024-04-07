@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Web Browser Based File Encryption / Decryption</title>
+	</head>
+	<style>
+		body {
+	  		font-family: 'Helvetica', 'Arial', 'sans-serif'; 
+			  color: black;
+			  font-size: 11pt;		
+		}
+
+		a, a:link, a:visited, a:active {
+			color: blue;
+			text-decoration: underline;
+		}
+
+		a:hover {
+			cursor:pointer;
+			color: red;
+		}
+
+		.black10pointcourier {
+	  		font-family: 'courier'; 
+			color: black;
+			font-size: 10pt;		
+		}
+
+		.container {
+			width: 80%;
+			margin: 0 auto;
+		}
+
+		.dropzone {
+			border: 10px dashed gray;
+			width: 20%;
+			padding: 2% 2% 5% 2%;
+			text-align: center;
+			margin: 5px 0 5px 0;
+		}
+
+		.divTablefullwidth{
+			display: table;
+			width: 100%;
+		}
+
+		.divTable{
+			display: table;
+		}
+
+		.divTableRow {
+			display: table-row;
+		}
+		.divTableCell {
+			display: table-cell;
+			padding: 3px 3px;
+		}
+		.divTableBody {
+			display: table-row-group;
+		}
+
+		.greenspan {
+			color: green;	  
+		}
+
+		.redspan {
+			color: red;	  
+		}
+		button {
+      background: purple;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      display: inline-block;
+    }
+		.main-container {
+ 		 font-size: 20px;
+	  background: url(crypto2.avif);
+  	background-size: cover;
+  	background-repeat: no-repeat;
+  	height: 100vh;
+ 	  text-align: center;
+  	flex-direction: column;
+  	justify-content: center;
+   	background-position: center center;
+  }
+  h2,h3,label{
+    color:white
+}
+#encodeResult, #decodeResult{
+    color: black;
+}
+
+		
+	</style>	
+	<body>
+		<div class="main-container">
+							<h2> Bitwise XOR Cipher Binary</h2>
+							<h1>
+							<button id="btnRefresh" onClick="javascript:location.reload();">Refresh Page</button>
+							<button id="btnDivEncrypt" onClick="javascript:switchdiv('encrypt');">Encrypt a File</button>
+							<button id="btnDivDecrypt" onClick="javascript:switchdiv('decrypt');">Decrypt a File</button>
+							</h1>
+
+		<div class="container" id=divEncryptfile>
+			<h2>Encrypt a File</h2>
+			<div class="divTable">
+				<div class="divTableBody">
+					<div class="divTableRow">
+						<div class="divTableCell">Password</div>
+						<div class="divTableCell"><input id=txtEncpassphrase type=password size=30 onkeyup=javascript:encvalidate(); value=''></div>
+					</div>
+					<div class="divTableRow">
+						<div class="divTableCell">Password (retype)</div>
+						<div class="divTableCell"><input id=txtEncpassphraseretype type=password size=30 onkeyup=javascript:encvalidate(); value=''></div>
+						<div class="divTableCell"><span class=greenspan id=spnCheckretype></span></div>
+					</div>
+				</div>
+			</div>
+			<div>
+				<div class=dropzone id="encdropzone" ondrop="drop_handler(event);" ondragover="dragover_handler(event);" ondragend="dragend_handler(event);">
+					<p>Drag and drop the file to be encrypted into this dropzone, or click <a onclick=javascript:encfileElem.click();>here</a> to select file.</p>
+					<p><span id=spnencfilename></span></p>
+				</div>
+				<input type="file" id="encfileElem" style="display:none" onchange="selectfile(this.files)">
+			</div>
+
+			<div class="divTable">
+				<div class="divTableBody">
+					<div class="divTableRow">
+						<div class="divTableCell"><button id=btnEncrypt onclick=javascript:encryptfile(); disabled>Encrypt File</button></div>
+						<div class="divTableCell"><span id=spnEncstatus></span></div>
+					</div>
+				</div>
+			</div>
+			<div>
+				<a id=aEncsavefile hidden><button>Save Encrypted File</button></a>
+			</div>
+		</div>
+
+		<div class="container" id=divDecryptfile>
+			<h2>Decrypt a File</h2>
+			
+
+			<div class="divTable">
+				<div class="divTableBody">
+					<div class="divTableRow">
+						<div class="divTableCell">Password</div>
+						<div class="divTableCell"><input id=txtDecpassphrase type=password size=30 onkeyup=javascript:decvalidate(); value=''></div>
+					</div>
+				</div>
+			</div>
+
+			<div>
+					<div class=dropzone  id="decdropzone" ondrop="drop_handler(event);" ondragover="dragover_handler(event);" ondragend="dragend_handler(event);">
+						<p>Drag and drop file to be decrypted into this dropzone, or click <a role=button onclick=javascript:decfileElem.click();>here</a> to select file.</p>
+						<p><span id=spndecfilename></span></p>
+					</div>
+					<input type="file" id="decfileElem" style="display:none" onchange="selectfile(this.files)">
+				</div>
+
+			<div class="divTable">
+				<div class="divTableBody">
+					<div class="divTableRow">
+						<div class="divTableCell"><button id=btnDecrypt onclick=javascript:decryptfile(); disabled>Decrypt File</button></div>
+						<div class="divTableCell"><span id=spnDecstatus></span></div>
+					</div>
+				</div>
+			</div>
+
+			<div>
+				<a id=aDecsavefile hidden><button>Save Decrypted File</button></a>
+			</div>
+			<br>
+			<div id="encodeResult"></div>
+			<div id="decodeResult"></div>
+			<a href="index.html">Back to Main Menu</a>
+		</div>
+	</div>
+	</body>
+</html>
+
+
+<script type="text/javascript">
+	var mode=null;
+	var objFile=null;
+	switchdiv('encrypt');
+
+	// Define sigma as a global constant
+const sigma = new Uint32Array([0x61707865, 0x3320646e, 0x79622d32, 0x6b206574]);
+
+// Define other functions and variables here...
+
+
+	function switchdiv(t) {
+		if(t=='encrypt') {
+			divEncryptfile.style.display='block';
+			divDecryptfile.style.display='none';
+			btnDivEncrypt.disabled=true;
+			btnDivDecrypt.disabled=false;
+			mode='encrypt';
+		} else if(t=='decrypt') {
+			divEncryptfile.style.display='none';
+			divDecryptfile.style.display='block';
+			btnDivEncrypt.disabled=false;
+			btnDivDecrypt.disabled=true;
+			mode='decrypt';
+		}
+	}
+
+	function encvalidate() {
+		if(txtEncpassphrase.value.length>=8 && txtEncpassphrase.value==txtEncpassphraseretype.value) { 
+		  spnCheckretype.classList.add("greenspan");
+		  spnCheckretype.classList.remove("redspan");
+		  spnCheckretype.innerHTML='&#10004;';
+		} else { 
+		  spnCheckretype.classList.remove("greenspan");
+		  spnCheckretype.classList.add("redspan");
+  		  spnCheckretype.innerHTML='&#10006;';
+		}
+
+		if( txtEncpassphrase.value.length>=8 && txtEncpassphrase.value==txtEncpassphraseretype.value && objFile ) { btnEncrypt.disabled=false; } else { btnEncrypt.disabled=true; }
+	}
+
+	function decvalidate() {
+		if( txtDecpassphrase.value.length>0 && objFile ) { btnDecrypt.disabled=false; } else { btnDecrypt.disabled=true; }
+	}
+
+	//drag and drop functions:
+	//https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API/File_drag_and_drop
+	function drop_handler(ev) {
+		console.log("Drop");
+		ev.preventDefault();
+		// If dropped items aren't files, reject them
+		var dt = ev.dataTransfer;
+		if (dt.items) {
+			// Use DataTransferItemList interface to access the file(s)
+			for (var i=0; i < dt.items.length; i++) {
+				if (dt.items[i].kind == "file") {
+					var f = dt.items[i].getAsFile();
+					console.log("... file[" + i + "].name = " + f.name);
+					objFile=f;
+				}
+			}
+		} else {
+			// Use DataTransfer interface to access the file(s)
+			for (var i=0; i < dt.files.length; i++) {
+				console.log("... file[" + i + "].name = " + dt.files[i].name);
+			}  
+			objFile=file[0];
+		}		 
+		displayfile()
+		if(mode=='encrypt') { encvalidate(); } else if(mode=='decrypt') { decvalidate(); }
+	}
+
+	function dragover_handler(ev) {
+		console.log("dragOver");
+		// Prevent default select and drag behavior
+		ev.preventDefault();
+	}
+
+	function dragend_handler(ev) {
+		console.log("dragEnd");
+		// Remove all of the drag data
+		var dt = ev.dataTransfer;
+		if (dt.items) {
+			// Use DataTransferItemList interface to remove the drag data
+			for (var i = 0; i < dt.items.length; i++) {
+				dt.items.remove(i);
+			}
+		} else {
+			// Use DataTransfer interface to remove the drag data
+			ev.dataTransfer.clearData();
+		}
+	}
+
+	function selectfile(Files) {
+		objFile=Files[0];
+		displayfile()
+		if(mode=='encrypt') { encvalidate(); } else if(mode=='decrypt') { decvalidate(); }
+	}
+
+	function displayfile() {
+		var s;
+		var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+		var bytes=objFile.size;
+		var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+		if(i==0) { s=bytes + ' ' + sizes[i]; } else { s=(bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i]; }
+
+		if(mode=='encrypt') { 
+			spnencfilename.textContent=objFile.name + ' (' + s + ')'; 
+		} else if(mode=='decrypt') {  
+			spndecfilename.textContent=objFile.name + ' (' + s + ')'; 
+		} 
+	}
+
+	function readfile(file){
+		return new Promise((resolve, reject) => {
+			var fr = new FileReader();  
+			fr.onload = () => {
+				resolve(fr.result )
+			};
+			fr.readAsArrayBuffer(file);
+		});
+	}
+	
+async function encryptfile() {
+	// Start the timer for encoding
+		const encodeStartTime = performance.now();
+
+    btnEncrypt.disabled = true;
+
+    try {
+        // Read the file content
+        var plaintextbytes = await readfile(objFile);
+        var plaintextUint8Array = new Uint8Array(plaintextbytes);
+
+        // Generate a random key and nonce for Salsa20 encryption
+        var key = window.crypto.getRandomValues(new Uint8Array(32));
+        var nonce = window.crypto.getRandomValues(new Uint8Array(8));
+
+        // Encrypt the plaintext using Salsa20
+        var ciphertextUint8Array = encryptSalsa20(key, nonce, plaintextUint8Array);
+
+        // Create Blob from the encrypted data
+        var blob = new Blob([nonce, new Uint8Array(ciphertextUint8Array)], { type: 'application/octet-stream' });
+        var blobUrl = URL.createObjectURL(blob);
+
+        // Set download link attributes
+        aEncsavefile.href = blobUrl;
+        aEncsavefile.download = 'en' + objFile.name;
+
+        // Display success message
+        spnEncstatus.classList.add("greenspan");
+        spnEncstatus.innerHTML = '<p>File encrypted with Salsa20 stream cipher.</p>';
+        aEncsavefile.hidden = false;
+    } catch (error) {
+        console.error('Error encrypting file with Salsa20:', error);
+        spnEncstatus.classList.add("redspan");
+        spnEncstatus.innerHTML = '<p>Error encrypting file with Salsa20. See console log.</p>';
+				
+    } 
+		
+		// End the timer for encoding
+		const encodeEndTime = performance.now();
+
+    // Calculate the elapsed time for encoding
+    const encodeElapsedTime = encodeEndTime - encodeStartTime;
+
+    // Display the elapsed time for encoding
+    document.getElementById('encodeResult').innerHTML = `Encoding - Elapsed time: ${encodeElapsedTime} milliseconds`;
+
+    return result;
+}
+
+function encryptSalsa20(key, nonce, plaintext) {
+    // Initialize the Salsa20 context
+    var ctx = {
+        key: new Uint32Array([key[0], key[1], key[2], key[3], key[4], key[5], key[6], key[7]]),
+        nonce: new Uint32Array([nonce[0], nonce[1], nonce[2], nonce[3], nonce[4], nonce[5], nonce[6], nonce[7]]),
+        counter: new Uint32Array([0, 0])
+    };
+
+    // Encrypt the plaintext using Salsa20
+    var ciphertext = new Uint8Array(plaintext.length);
+    for (var i = 0; i < plaintext.length; i++) {
+        if (i % 64 === 0) {
+            // Update the counter every 64 bytes
+            ctx.counter[0]++;
+            if (ctx.counter[0] === 0) {
+                ctx.counter[1]++;
+            }
+        }
+        ciphertext[i] = plaintext[i] ^ keystream(ctx)[i % 64];
+    }
+
+    return ciphertext;
+}
+
+function keystream(ctx) {
+    var block = new Uint8Array(64);
+    for (var i = 0; i < 64; i++) {
+        block[i] = 0;
+    }
+    salsa20(ctx, block);
+    return block;
+}
+
+function salsa20(ctx, block) {
+    // Salsa20 constants
+    const sigma = [0x61707865, 0x3320646e, 0x79622d32, 0x6b206574]; // "expand 32-byte k"
+
+    var x = new Uint32Array(16);
+    var z = new Uint32Array(16);
+    var y = new Uint32Array(16);
+
+    // Initialize state
+    for (var i = 0; i < 16; i++) {
+        x[i] = 0;
+        z[i] = 0;
+        y[i] = 0;
+    }
+
+    // Set key
+    for (var i = 0; i < 8; i++) {
+        x[i] = ctx.key[i];
+    }
+
+    // Set nonce
+    for (var i = 0; i < 2; i++) {
+        x[i + 8] = ctx.nonce[i];
+    }
+
+    // Set constants
+    for (var i = 0; i < 4; i++) {
+        x[i + 12] = sigma[i];
+    }
+
+    // Copy state
+    for (var i = 0; i < 16; i++) {
+        y[i] = x[i];
+    }
+
+    // Double round
+    for (var i = 0; i < 10; i++) {
+        quarterround(x, 0, 4, 8, 12);
+        quarterround(x, 1, 5, 9, 13);
+        quarterround(x, 2, 6, 10, 14);
+        quarterround(x, 3, 7, 11, 15);
+        quarterround(x, 0, 5, 10, 15);
+        quarterround(x, 1, 6, 11, 12);
+        quarterround(x, 2, 7, 8, 13);
+        quarterround(x, 3, 4, 9, 14);
+    }
+
+    // Add original state to final state
+    for (var i = 0; i < 16; i++) {
+        x[i] += y[i];
+    }
+
+    // Serialize final state to output block
+    for (var i = 0; i < 16; i++) {
+        block.set(toByteArray(x[i]), i * 4);
+    }
+}
+
+// Helper function to perform a quarter round
+function quarterround(x, a, b, c, d) {
+    x[b] ^= rotl32(x[a] + x[d], 7);
+    x[c] ^= rotl32(x[b] + x[a], 9);
+    x[d] ^= rotl32(x[c] + x[b], 13);
+    x[a] ^= rotl32(x[d] + x[c], 18);
+}
+
+// Helper function to perform a 32-bit left rotation
+function rotl32(value, shift) {
+    return (value << shift) | (value >>> (32 - shift));
+}
+
+// Helper function to convert a 32-bit integer to a byte array
+// Helper function to convert a 32-bit integer to a byte array in little-endian order
+function toByteArray(value) {
+    return [(value & 0xFF), (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF];
+}
+
+
+async function decryptFile() {
+        const fileInput = document.getElementById('fileInput');
+        const passphraseInput = document.getElementById('passphraseInput');
+
+        const file = fileInput.files[0];
+        const passphrase = passphraseInput.value;
+
+        const reader = new FileReader();
+
+        reader.onload = async function () {
+            try {
+                const cipherText = new Uint8Array(reader.result);
+
+                // Extract nonce from the beginning of the ciphertext
+                const nonce = cipherText.slice(0, 8); // Salsa20 nonce is 8 bytes
+                const ciphertext = cipherText.slice(8);
+
+                // Derive key from passphrase using PBKDF2
+                const key = CryptoJS.PBKDF2(passphrase, nonce, { keySize: 256 / 32, iterations: 1000 });
+
+                // Decrypt the ciphertext using Salsa20
+                const decryptedBytes = CryptoJS.Salsa20.decrypt({ ciphertext: CryptoJS.lib.WordArray.create(ciphertext) }, key, { iv: CryptoJS.lib.WordArray.create(nonce) });
+
+                // Convert decrypted bytes to a Blob
+                const decryptedBlob = new Blob([decryptedBytes], { type: file.type });
+
+                // Create a download link for the decrypted file
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(decryptedBlob);
+                downloadLink.download = 'decrypted_' + file.name;
+
+                // Simulate a click on the download link
+                downloadLink.click();
+
+                console.log('Decryption successful');
+            } catch (error) {
+                console.error('Error decrypting file with Salsa20:', error);
+            }
+        };
+
+        reader.readAsArrayBuffer(file);
+    
+
+    // End the timer for decoding
+    const decodeEndTime = performance.now();
+
+    // Calculate the elapsed time for decoding
+    const decodeElapsedTime = decodeEndTime - decodeStartTime;
+
+    // Display the elapsed time for decoding
+    document.getElementById('decodeResult').innerHTML = `Decoding - Elapsed time: ${decodeElapsedTime} milliseconds`;
+}
+
+
+
+
+</script>
+
